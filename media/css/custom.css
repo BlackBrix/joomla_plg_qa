@@ -1,0 +1,21 @@
+#fieldset-custom input {
+	vertical-align: middle;
+}
+#plg-qa-edit {
+	margin-top: 1rem;
+	border: 1px dashed #CCC;
+}
+
+.complex-data-wrapper {
+	padding: 1rem;
+}
+.qaq-rows {
+	display: grid;
+	grid-template-columns: auto auto;
+	justify-content: start;
+}
+
+.control-group.notshown {
+	position: absolute;
+	left: -9999px;
+}

@@ -1,9 +1,9 @@
 <?php
 /**
 * @package		plg_captcha_qa (Plugin Captcha Q&A)
-* @copyright	(C) 2013-2024 RJCreations. All rights reserved.
+* @copyright	(C) 2013-2026 RJCreations. All rights reserved.
 * @license		GNU General Public License version 3 or later; see LICENSE.txt
-* @since		1.5.0
+* @since		1.5.2
 */
 namespace RJCreations\Plugin\Captcha\Qa\Extension;
 
@@ -12,6 +12,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Layout\FileLayout;
 
 class Qa extends CMSPlugin
 {
@@ -35,6 +36,11 @@ class Qa extends CMSPlugin
 	{
 		$lang = Factory::getLanguage();
 		$lang->load('custom' , dirname(dirname(dirname(__FILE__))), $lang->getTag(), true);
+		$cstm = $this->params->get('customqa', '', 'STRING');
+		if ($cstm) {
+			$this->getQandas($cstm, true);
+			return true;
+		}
 		$this->getQandas('en-GB');
 		if ($lang->getTag() != 'en-GB') {
 			$this->getQandas($lang->getTag());
@@ -94,15 +100,51 @@ class Qa extends CMSPlugin
 			$app->enqueueMessage(Text::_('PLG_CAPTCHA_QA_ERROR_NOT_HUMAN').' '.Text::_('PLG_CAPTCHA_QA_ERROR_TOO_QUICK'), 'error');
 			return false;
 		}
-	//	$qa = Text::_('PLG_CAPTCHA_QA_Q'.$qn);
-	//	list($q,$a) = explode('|',$qa);
-	//	$cas = explode(',',trim($a));
 		$cas = $this->getQans($qn);
 		if (in_array(trim($code), array_map('trim', $cas))) {
 			return true;
 		}
 		$app->enqueueMessage(Text::_('PLG_CAPTCHA_QA_ERROR_NOT_HUMAN').' '.Text::_('PLG_CAPTCHA_QA_ERROR_INCORRECT'), 'error');
 		return false;
+	}
+
+	public function onAjaxQa()
+	{
+		$app = Factory::getApplication();
+
+		$input = $app->input;
+		$indat = [$input->get->getArray(), $input->post->getArray()];
+		file_put_contents('DADAT.txt', print_r($indat, true), FILE_APPEND);
+
+		$post = $input->post->getArray();
+		if ($post) {
+			$this->saveQandas($post);
+		} else {
+			$this->sendForm($input->getString('itemid', 0));
+		}
+		$app->close();
+	}
+
+	private function loadComplexData ($id): array
+	{
+		$this->getQandas($id, true);
+		if ($this->qandas) {
+			$qans = [];
+			foreach ($this->qandas as $qa) {
+				foreach ($qa as $q=>$a) {
+					$qans[$q] = implode(' | ',$a);
+				}
+			}
+			return [
+				'questions' => $qans,
+				'customnum' => $id
+			];
+		}
+		// Replace with your database queries or external API calls
+		return [
+			'questions' => [''=>''],
+			'customnum' => $id
+		];
 	}
 
 	private function getQans ($qn)
@@ -116,27 +158,48 @@ class Qa extends CMSPlugin
 		}
 	}
 
-	private function getQandas ($ln)
+	private function getQandas ($ln, $cstm=false)				//<<< @@@@@@@@@  fix logic
 	{
-		$qaf = JPATH_ROOT.'/media/plg_captcha_qa/qalang/custom/qandas_'.$ln.'.json';
-		if (file_exists($qaf)) {
-			try {
-				$qas = json_decode(file_get_contents($qaf),true);
-				$this->qandas = $qas;
-				return;
-			} catch (\JsonException $e) {
+		foreach (['/custom',''] as $subd) {
+			if ($cstm) {
+				$qaf = JPATH_ROOT.'/media/plg_captcha_qa'.$subd.'/custom/'.$ln;
+			} else {
+				$qaf = JPATH_ROOT.'/media/plg_captcha_qa/qalang'.$subd.'/qandas_'.$ln.'.json';
 			}
-		}
-
-		$qaf = JPATH_ROOT.'/media/plg_captcha_qa/qalang/qandas_'.$ln.'.json';
-		if (file_exists($qaf)) {
-			try {
-				$qas = json_decode(file_get_contents($qaf),true);
-				$this->qandas = $qas;
-				return;
-			} catch (\JsonException $e) {
-				return null;
+			if (file_exists($qaf)) {
+				try {
+					$qas = json_decode(file_get_contents($qaf),true);
+					$this->qandas = $qas;
+					file_put_contents('QAS.txt',print_r($qas, true));
+					return;
+				} catch (\JsonException $e) {
+				}
 			}
 		}
 	}
+
+	private function saveQandas ($data)
+	{
+		$qas = [];
+		$cnt = count($data['Q']);
+		for ($i=0; $i<$cnt; $i++) {
+			$qas[] = [$data['Q'][$i] => array_map('trim', explode('|',$data['A'][$i]))];
+		}
+		file_put_contents(JPATH_ROOT.'/media/plg_captcha_qa/custom/'.$data['FN'], json_encode($qas, JSON_PRETTY_PRINT));
+		echo json_encode(['success'=>true]);
+	}
+
+	private function sendForm ($qnum)
+	{
+		$data = $this->loadComplexData($qnum);
+
+		$basePath = JPATH_PLUGINS . '/captcha/qa/layouts';
+		$layout = new FileLayout('modal.questions', $basePath);
+		$htmlOutput = $layout->render([
+			'questions' => $data['questions'],
+			'customnum' => $data['customnum']
+		]);
+		echo $htmlOutput;
+	}
+
 }

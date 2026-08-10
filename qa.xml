@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="captcha" method="upgrade">
 	<name>PLG_CAPTCHA_QA</name>
-	<creationDate>May 2025</creationDate>
+	<creationDate>August 2026</creationDate>
 	<author>Ron Crans</author>
 	<authorEmail>ronjc@rjconline.net</authorEmail>
 	<authorUrl>rjconline.net</authorUrl>
-	<version>1.5.0</version>
+	<version>1.5.2</version>
 	<updater jver="((4\.[1-8])||(5\.[0-3]))" pver="7.2" />
-	<copyright>Copyright (C) 2013-2025 RJCreations. All rights reserved.</copyright>
+	<copyright>Copyright (C) 2013-2026 RJCreations. All rights reserved.</copyright>
 	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
 	<description>PLG_CAPTCHA_QA_XML_DESCRIPTION</description>
 	<namespace path="src">RJCreations\Plugin\Captcha\Qa</namespace>
@@ -15,6 +15,7 @@
 	<files>
 		<folder plugin="qa">services</folder>
 		<folder>language</folder>
+		<folder>layouts</folder>
 		<folder>src</folder>
 	</files>
 	<media destination="plg_captcha_qa" folder="media">
@@ -30,6 +31,14 @@
 					label="PLG_CAPTCHA_QA_TIME_CHECK_LABEL"
 					description="PLG_CAPTCHA_QA_TIME_CHECK_DESC"
 					filter="integer" />
+			</fieldset>
+			<fieldset name="custom" label="PLG_CAPTCHA_QA_CUSTOMQAS" addfieldprefix="RJCreations\Plugin\Captcha\Qa\Field">
+				<field
+					name="customqa"
+					type="customqas"
+					default="0"
+					hiddenLabel="true" />
+				<field name="my_modal_container" type="modal" control_class="notshown" />
 			</fieldset>
 		</fields>
 	</config>

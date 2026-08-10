@@ -1,0 +1,79 @@
+<?php
+/**
+* @package		plg_captcha_qa (Plugin Captcha Q&A)
+* @copyright	(C) 2013-2026 RJCreations. All rights reserved.
+* @license		GNU General Public License version 3 or later; see LICENSE.txt
+* @since		1.5.2
+*/
+namespace RJCreations\Plugin\Captcha\Qa\Field;
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Form\FormField;
+use Joomla\CMS\HTML\HTMLHelper;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('_JEXEC') or die;
+// phpcs:enable PSR1.Files.SideEffects
+
+class ModalField extends FormField
+{
+	protected $type = 'modal';
+
+	public function __construct ($form = null)
+	{
+		HTMLHelper::_('bootstrap.modal');
+		$doc = Factory::getApplication()->getDocument();
+		$wa = $doc->getWebAssetManager();
+		$wa->getRegistry()->addExtensionRegistryFile('plg_captcha_qa');
+		$wa->registerAndUseStyle('plg_captcha_qa.custom', 'plg_captcha_qa/custom.css', [], [], [])
+			->registerScript('plg_captcha_qa.custom', 'plg_captcha_qa/custom.js', [], [], [])
+			->useScript('plg_captcha_qa.custom');
+		parent::__construct($form);
+	}
+
+	protected function getInput ()
+	{
+		return <<<EOD
+<div class="modal fade" id="complexDataModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalLabel">Custom Questions</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="complexDataContainer">
+				<div class="ratio ratio-16x9">
+					<iframe id="qasEditFrame"
+						src="index.php?option=com_ajax&group=captcha&plugin=qa&req=new&format=raw"
+						width="100%"
+						loading="lazy"
+						style="border:0; width:100%;"
+						allowfullscreen>
+					</iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+EOD;
+	}
+
+	public function renderField ($options = [])
+	{
+		// Read your arbitrary XML attribute safely
+		$wrapperClass = !empty($this->element['control_class']) ? (string) $this->element['control_class'] : '';
+	
+		if ($wrapperClass) {
+			// Joomla uses 'class' inside the layout options array for the wrapper wrapper row
+			if (empty($options['class'])) {
+				$options['class'] = $wrapperClass;
+			} else {
+				$options['class'] .= ' ' . $wrapperClass;
+			}
+		}
+	
+		// Let Joomla render the field layout with your new options array
+		return parent::renderField($options);
+	}
+
+}
