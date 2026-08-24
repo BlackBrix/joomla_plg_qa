@@ -3,7 +3,7 @@
 * @package		plg_captcha_qa (Plugin Captcha Q&A)
 * @copyright	(C) 2013-2026 RJCreations. All rights reserved.
 * @license		GNU General Public License version 3 or later; see LICENSE.txt
-* @since		1.5.2
+* @since		1.5.3
 */
 namespace RJCreations\Plugin\Captcha\Qa\Field;
 
@@ -22,12 +22,10 @@ class ModalField extends FormField
 	public function __construct ($form = null)
 	{
 		HTMLHelper::_('bootstrap.modal');
-		$doc = Factory::getApplication()->getDocument();
-		$wa = $doc->getWebAssetManager();
-		$wa->getRegistry()->addExtensionRegistryFile('plg_captcha_qa');
-		$wa->registerAndUseStyle('plg_captcha_qa.custom', 'plg_captcha_qa/custom.css', [], [], [])
-			->registerScript('plg_captcha_qa.custom', 'plg_captcha_qa/custom.js', [], [], [])
-			->useScript('plg_captcha_qa.custom');
+		$wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+	//	$wa->getRegistry()->addExtensionRegistryFile('plg_captcha_qa');
+		$wa->registerAndUseStyle('plg_captcha_qa.custom', 'plg_captcha_qa/custom.css')
+			->registerAndUseScript('plg_captcha_qa.custom', 'plg_captcha_qa/custom.js');
 		parent::__construct($form);
 	}
 

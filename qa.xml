@@ -5,7 +5,7 @@
 	<author>Ron Crans</author>
 	<authorEmail>ronjc@rjconline.net</authorEmail>
 	<authorUrl>rjconline.net</authorUrl>
-	<version>1.5.2</version>
+	<version>1.5.3</version>
 	<updater jver="((4\.[1-8])||(5\.[0-3]))" pver="7.2" />
 	<copyright>Copyright (C) 2013-2026 RJCreations. All rights reserved.</copyright>
 	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
