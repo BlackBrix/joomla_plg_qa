@@ -3,7 +3,7 @@
 * @package		plg_captcha_qa (Plugin Captcha Q&A)
 * @copyright	(C) 2013-2026 RJCreations. All rights reserved.
 * @license		GNU General Public License version 3 or later; see LICENSE.txt
-* @since		1.5.2
+* @since		1.5.4
 */
 namespace RJCreations\Plugin\Captcha\Qa\Extension;
 
@@ -13,8 +13,9 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Layout\FileLayout;
+use Joomla\Event\SubscriberInterface;
 
-class Qa extends CMSPlugin
+class Qa extends CMSPlugin implements SubscriberInterface
 {
 	protected $autoloadLanguage = true;
 	protected $timecheck;
@@ -32,10 +33,10 @@ class Qa extends CMSPlugin
 	 * @param   string	$id	The id of the field.
 	 * @return  Boolean	True on success, false otherwise
 	 */
-	public function onInit ($id)
+	public function onInit ($id=null)
 	{
 		$lang = Factory::getLanguage();
-		$lang->load('custom' , dirname(dirname(dirname(__FILE__))), $lang->getTag(), true);
+		$lang->load('custom' , dirname(__FILE__, 3), $lang->getTag(), true);
 		$cstm = $this->params->get('customqa', '', 'STRING');
 		if ($cstm) {
 			$this->getQandas($cstm, true);
@@ -71,7 +72,7 @@ class Qa extends CMSPlugin
 		$ccd = '<input type="hidden" name="captcha_code" value="'."{$rq}-{$tm}-{$sf}".'" />';
 		$label = '<span>'.Text::_('PLG_CAPTCHA_QA_LABEL_PLEASE').'</span>';
 		$qa = Text::_('PLG_CAPTCHA_QA_Q'.$rq);
-		list($q,$a) = explode('|',$qa);
+		[$q, $a] = explode('|',$qa);
 		return $label.'<br>'.trim($q).$fld.$ccd;
 	}
 
@@ -85,10 +86,10 @@ class Qa extends CMSPlugin
 		$this->onInit(0);
 
 		$app = Factory::getApplication();
-		$input = $app->input;
+		$input = $app->getInput();
 		$ccd = $input->get('captcha_code', '--', 'cmd');
-		list($qn,$tm,$ck) = explode('-', $ccd);
-		if ((((int)$qn * (int)$tm) % 97) != (int)$ck) {
+		[$qn, $tm, $ck] = explode('-', $ccd);
+		if ((int)$qn * (int)$tm % 97 !== (int)$ck) {
 			$app->enqueueMessage(Text::_('PLG_CAPTCHA_QA_ERROR_GENERAL'), 'error');
 			return false;
 		}
@@ -101,18 +102,18 @@ class Qa extends CMSPlugin
 			return false;
 		}
 		$cas = $this->getQans($qn);
-		if (in_array(trim($code), array_map('trim', $cas))) {
+		if (in_array(trim($code), array_map(trim(...), $cas))) {
 			return true;
 		}
 		$app->enqueueMessage(Text::_('PLG_CAPTCHA_QA_ERROR_NOT_HUMAN').' '.Text::_('PLG_CAPTCHA_QA_ERROR_INCORRECT'), 'error');
 		return false;
 	}
 
-	public function onAjaxQa()
+	public function onAjaxQa (): void
 	{
 		$app = Factory::getApplication();
 
-		$input = $app->input;
+		$input = $app->getInput();
 		$indat = [$input->get->getArray(), $input->post->getArray()];
 		file_put_contents('DADAT.txt', print_r($indat, true), FILE_APPEND);
 
@@ -147,18 +148,17 @@ class Qa extends CMSPlugin
 		];
 	}
 
-	private function getQans ($qn)
+	private function getQans (string $qn)
 	{
 		if ($this->qandas) {
 			return array_values($this->qandas[$qn-1])[0];
-		} else {
-			$qa = Text::_('PLG_CAPTCHA_QA_Q'.$qn);
-			list($q,$a) = explode('|',$qa);
-			return explode(',',trim($a));
 		}
+		$qa = Text::_('PLG_CAPTCHA_QA_Q'.$qn);
+		[$q, $a] = explode('|',$qa);
+		return explode(',',trim($a));
 	}
 
-	private function getQandas ($ln, $cstm=false)				//<<< @@@@@@@@@  fix logic
+	private function getQandas ($ln, bool $cstm=false): void				//<<< @@@@@@@@@  fix logic
 	{
 		foreach (['/custom',''] as $subd) {
 			if ($cstm) {
@@ -178,18 +178,18 @@ class Qa extends CMSPlugin
 		}
 	}
 
-	private function saveQandas ($data)
+	private function saveQandas (array $data): void
 	{
 		$qas = [];
 		$cnt = count($data['Q']);
 		for ($i=0; $i<$cnt; $i++) {
-			$qas[] = [$data['Q'][$i] => array_map('trim', explode('|',$data['A'][$i]))];
+			$qas[] = [$data['Q'][$i] => array_map(trim(...), explode('|',$data['A'][$i]))];
 		}
 		file_put_contents(JPATH_ROOT.'/media/plg_captcha_qa/custom/'.$data['FN'], json_encode($qas, JSON_PRETTY_PRINT));
 		echo json_encode(['success'=>true]);
 	}
 
-	private function sendForm ($qnum)
+	private function sendForm ($qnum): void
 	{
 		$data = $this->loadComplexData($qnum);
 
@@ -200,6 +200,11 @@ class Qa extends CMSPlugin
 			'customnum' => $data['customnum']
 		]);
 		echo $htmlOutput;
+	}
+
+	public static function getSubscribedEvents (): array
+	{
+		return ['onInit' => 'onInit', 'onDisplay' => 'onDisplay', 'onCheckAnswer' => 'onCheckAnswer', 'onAjaxQa' => 'onAjaxQa'];
 	}
 
 }

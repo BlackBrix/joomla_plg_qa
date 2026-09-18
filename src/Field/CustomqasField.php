@@ -3,7 +3,7 @@
 * @package		plg_captcha_qa (Plugin Captcha Q&A)
 * @copyright	(C) 2013-2026 RJCreations. All rights reserved.
 * @license		GNU General Public License version 3 or later; see LICENSE.txt
-* @since		1.5.2
+* @since		1.5.4
 */
 namespace RJCreations\Plugin\Captcha\Qa\Field;
 
@@ -31,8 +31,7 @@ class CustomqasField extends FormField
 			$ck = $val==$file ? ' checked' : '';
 			$html .= '<div><label><input type="radio" name="'.$nam.'" value="'.$file.'"'.$ck.'> '.$file.'</label> <span class="icon-edit" onclick="editQas(\''.$file.'\')"> </span></div>';
 		}
-		$html .= '<button type="button" class="btn btn-secondary" onclick="editQas()"><span class="icon-plus" aria-hidden="true"></span> Create</button>';
-		return $html;
+		return $html . '<button type="button" class="btn btn-secondary" onclick="editQas()"><span class="icon-plus" aria-hidden="true"></span> Create</button>';
 	}
 
 }
