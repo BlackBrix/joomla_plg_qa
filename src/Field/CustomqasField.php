@@ -3,7 +3,7 @@
 * @package		plg_captcha_qa (Plugin Captcha Q&A)
 * @copyright	(C) 2013-2026 RJCreations. All rights reserved.
 * @license		GNU General Public License version 3 or later; see LICENSE.txt
-* @since		1.5.4
+* @since		1.5.5
 */
 namespace RJCreations\Plugin\Captcha\Qa\Field;
 
@@ -24,7 +24,8 @@ class CustomqasField extends FormField
 	{
 		$nam = $this->name;
 		$val = $this->value;
-		$files = Folder::files(JPATH_ROOT.'/media/plg_captcha_qa/custom');
+		$custf = JPATH_ROOT.'/media/plg_captcha_qa/custom';
+		$files = Folder::exists($custf) ? Folder::files($custf) : [];
 		$ck = $val=='0' ? ' checked' : '';
 		$html = '<div><label><input type="radio" name="'.$nam.'" value=""'.$ck.'> '.Text::_('PLG_CAPTCHA_QA_NO_CUSTOM').'</label></div>';
 		foreach($files as $file) {

@@ -3,7 +3,7 @@
 * @package		plg_captcha_qa (Plugin Captcha Q&A)
 * @copyright	(C) 2013-2026 RJCreations. All rights reserved.
 * @license		GNU General Public License version 3 or later; see LICENSE.txt
-* @since		1.5.4
+* @since		1.5.5
 */
 namespace RJCreations\Plugin\Captcha\Qa\Extension;
 
@@ -13,6 +13,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Layout\FileLayout;
+use Joomla\Filesystem\Folder;
 use Joomla\Event\SubscriberInterface;
 
 class Qa extends CMSPlugin implements SubscriberInterface
@@ -180,12 +181,14 @@ class Qa extends CMSPlugin implements SubscriberInterface
 
 	private function saveQandas (array $data): void
 	{
+		$custf = JPATH_ROOT.'/media/plg_captcha_qa/custom';
+		Folder::create($custf);
 		$qas = [];
 		$cnt = count($data['Q']);
 		for ($i=0; $i<$cnt; $i++) {
 			$qas[] = [$data['Q'][$i] => array_map(trim(...), explode('|',$data['A'][$i]))];
 		}
-		file_put_contents(JPATH_ROOT.'/media/plg_captcha_qa/custom/'.$data['FN'], json_encode($qas, JSON_PRETTY_PRINT));
+		file_put_contents($custf.'/'.$data['FN'], json_encode($qas, JSON_PRETTY_PRINT));
 		echo json_encode(['success'=>true]);
 	}
 

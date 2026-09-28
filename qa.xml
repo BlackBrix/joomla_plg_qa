@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="captcha" method="upgrade">
 	<name>PLG_CAPTCHA_QA</name>
-	<creationDate>September 2026</creationDate>
+	<creationDate>October 2026</creationDate>
 	<author>Ron Crans</author>
 	<authorEmail>ronjc@rjconline.net</authorEmail>
 	<authorUrl>rjconline.net</authorUrl>
-	<version>1.5.4</version>
+	<version>1.5.5</version>
 	<updater jver="((4\.[1-8])||(5\.[0-3]))" pver="7.2" />
 	<copyright>Copyright (C) 2013-2026 RJCreations. All rights reserved.</copyright>
 	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
@@ -20,6 +20,8 @@
 	</files>
 	<media destination="plg_captcha_qa" folder="media">
 		<folder>qalang</folder>
+		<folder>css</folder>
+		<folder>js</folder>
 	</media>
 	<config>
 		<fields name="params">
